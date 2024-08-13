@@ -1,0 +1,133 @@
+.grid-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 120px; /* Space between the two grids */
+  margin-bottom: 20px; /* Space between grids and buttons */
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.grid-row {
+  display: flex;
+  gap: 10px;
+}
+
+.grid-cell {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border: 2px solid #4A90E2;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #F0F4F8;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.grid-cell:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.grid-cell input {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  border: none;
+  outline: none;
+  background-color: transparent;
+  cursor: pointer;
+  color: #333;
+}
+
+.grid-cell input:disabled {
+  cursor: not-allowed;
+}
+
+.grid-cell input:focus {
+  border: none;
+  outline: none;
+  background-color: #DCE3F1;
+  border-radius: 8px;
+}
+
+.red-x {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 0, 0, 0.3);
+  color: red;
+  font-size: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  font-weight: bold;
+}
+
+/* Additional styles for the App */
+.App {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  max-width: 800px; /* Adjusted width to fit side by side grids */
+  margin: 0 auto;
+  text-align: center;
+}
+
+h1 {
+  color: #4A90E2;
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+h2 {
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  background-color: #4A90E2;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+button:hover {
+  background-color: #357ABD;
+  transform: scale(1.05);
+}
+
+button:disabled {
+  background-color: #A1B5D8;
+  cursor: not-allowed;
+}
+
+button[hidden] {
+  display: none;
+}
+
+  
