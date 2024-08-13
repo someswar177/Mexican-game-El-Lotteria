@@ -3,62 +3,132 @@ import axios from 'axios';
 import Grid from './components/Grid';
 import StartButton from './components/StartButton';
 import StopButton from './components/StopButton';
+import { io } from "socket.io-client";
 
 const App = () => {
-  const [user1Grid, setUser1Grid] = useState(Array(3).fill(Array(3).fill('')));
-  const [user2Grid, setUser2Grid] = useState(Array(3).fill(Array(3).fill('')));
-  const [gameStarted, setGameStarted] = useState(false);
+    const socket = io('http://localhost:5000');
+    socket.on('winner', (data) => {
+        console.log('Winner detected:', data.userId);
+        // alert(`User ${data.userId} has won the game!`);
+    });
+    const [user1Grid, setUser1Grid] = useState(
+        Array.from({ length: 3 }, () => Array(3).fill(''))
+    );
+    const [user2Grid, setUser2Grid] = useState(
+        Array.from({ length: 3 }, () => Array(3).fill(''))
+    );
+    const [winners, setWinners] = useState([]);
+    const [isGameActive, setIsGameActive] = useState(false);
+    const [generatedNumbers, setGeneratedNumbers] = useState([]);
+    const [user1Id, setUser1Id] = useState(null);
+    const [user2Id, setUser2Id] = useState(null);
 
-  const startGame = async () => {
-    try {
-      await axios.post('/api/game/start', { user1Grid, user2Grid });
-      setGameStarted(true);
-      generateRandomNumbers();
-    } catch (error) {
-      console.error('Error starting game:', error);
-    }
-  };
+    const handleGridUpdate = (userId, grid) => {
+        if (userId === 'user1') setUser1Grid(grid);
+        else if (userId === 'user2') setUser2Grid(grid);
+    };
 
-  const stopGame = () => {
-    setGameStarted(false);
-  };
+    const validateGrids = () => {
+        const validateGrid = (grid) => {
+            const flattened = grid.flat();
+            const uniqueNumbers = new Set(flattened);
+            return flattened.length === uniqueNumbers.size;
+        };
 
-  const generateRandomNumbers = async () => {
-    const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    while (gameStarted && numbers.length > 0) {
-      const randomIndex = Math.floor(Math.random() * numbers.length);
-      const randomNumber = numbers.splice(randomIndex, 1)[0];
+        return validateGrid(user1Grid) && validateGrid(user2Grid);
+    };
 
-      try {
-        const response = await axios.post('/api/game/generate-number', { number: randomNumber });
-        if (response.data.winner) {
-          alert(`${response.data.winner} wins!`);
-          setGameStarted(false);
-          break;
+    const startGame = async () => {
+        if (!validateGrids()) {
+            alert("Each grid must contain unique numbers.");
+            return;
         }
-      } catch (error) {
-        console.error('Error generating number:', error);
-      }
 
-      await new Promise(r => setTimeout(r, 1000));
-    }
-  };
+        if (JSON.stringify(user1Grid) === JSON.stringify(user2Grid)) {
+            alert("The grids for User 1 and User 2 cannot be the same.");
+            return;
+        }
 
-  return (
-    <div>
-      <h1>Lottery Game</h1>
-      <div>
-        <h2>User 1 Grid</h2>
-        <Grid grid={user1Grid} setGrid={setUser1Grid} />
-      </div>
-      <div>
-        <h2>User 2 Grid</h2>
-        <Grid grid={user2Grid} setGrid={setUser2Grid} />
-      </div>
-      <StartButton onClick={startGame} />
-      <StopButton onClick={stopGame} />
-    </div>
-  );
+        try {
+            if (!isGameActive) {
+                console.log(user1Grid);
+                const response = await axios.post('http://localhost:5000/api/game/start', { user1Grid, user2Grid });
+                console.log("Game started from frontend");
+
+                setUser1Id(response.data.user1Id);
+                setUser2Id(response.data.user2Id);
+
+                setGeneratedNumbers([]);
+                setWinners([]);
+            } else {
+                console.log("Game stopped from frontend");
+                window.location.reload();
+            }
+            setIsGameActive(!isGameActive);
+        } catch (error) {
+            console.error('Error starting/stopping the game:', error.response?.data || error.message);
+        }
+    };
+
+    const generateNumber = async () => {
+        let randomNumber;
+
+        if (generatedNumbers.length === 9) {
+            console.log("All numbers have been generated.");
+            return;
+        }
+
+        do {
+            randomNumber = Math.floor(Math.random() * 9) + 1;
+        } while (generatedNumbers.includes(randomNumber));
+
+        console.log("Generated number:", randomNumber);
+
+        try {
+            const response = await axios.post('http://localhost:5000/api/game/generate-number', { number: randomNumber });
+            console.log("Number sent to backend:", randomNumber);
+
+            setGeneratedNumbers([...generatedNumbers, randomNumber]);
+
+            if (response.data.winners) {
+                setWinners(response.data.winners.map(winner => winner.userId));
+                console.log(response.data.winners);
+                console.log(winners);
+            }
+        } catch (error) {
+            console.error('Error generating number:', error.response?.data || error.message);
+        }
+    };
+
+    return (
+        <div className="App">
+            <h1>El Lotteria Game</h1>
+            <div className="grid-container">
+                <div>
+                    <h2>User 1</h2>
+                    <Grid grid={user1Grid} setGrid={(grid) => handleGridUpdate('user1', grid)} generatedNumbers={generatedNumbers} />
+                </div>
+                <div>
+                    <h2>User 2</h2>
+                    <Grid grid={user2Grid} setGrid={(grid) => handleGridUpdate('user2', grid)} generatedNumbers={generatedNumbers} />
+                </div>
+            </div>
+            {winners.length > 1 ? (
+                <h2>Winners: {winners.join(', ')}</h2>
+            ) : (winners.length > 0 && <h2>Winner: {winners.join(', ')}</h2>)
+            }
+            <div className="buttons-container">
+                <button onClick={startGame}>
+                    {isGameActive ? 'Start New Game' : 'Start Game'}
+                </button>
+                <button onClick={generateNumber} disabled={!isGameActive} hidden={winners.length > 0}>
+                    Generate Number
+                </button>
+            </div>
+            {/* {user1Id && <p>User 1 ID: {user1Id}</p>}
+        {user2Id && <p>User 2 ID: {user2Id}</p>} */}
+        </div>
+    );
 };
 
 export default App;
