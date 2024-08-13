@@ -17,3 +17,51 @@
   font-size: 1.5rem;
 }
 
+.user-name-input {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+  padding: 5px;
+  border: 2px solid #ffffff;
+  border-radius: 8px;
+  /* background-color: #F0F4F8; */
+  color: #333;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.user-name-input:disabled {
+  background-color: #DCE3F1;
+  cursor: not-allowed;
+}
+
+
+.winner-announcement {
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  color: #ffffff;
+  background-color: #fa0477b2; 
+  padding: 15px 20px;
+  font-size: 20px;
+  border-radius: 8px;
+  text-align: center;
+  margin: 20px auto; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  animation: winnerAnimation 2s ease-in-out;
+  max-width: 300px; 
+  width: 100%; 
+}
+
+@keyframes winnerAnimation {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+

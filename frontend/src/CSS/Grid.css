@@ -2,8 +2,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 120px; /* Space between the two grids */
-  margin-bottom: 20px; /* Space between grids and buttons */
+  gap: 120px; 
+  margin-bottom: 20px; 
 }
 
 .grid {
@@ -86,9 +86,10 @@
 }
 
 h1 {
-  color: #4A90E2;
+  color: #fa4f00;
   font-size: 36px;
   margin-bottom: 20px;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
 h2 {
@@ -105,7 +106,7 @@ h2 {
 
 button {
   margin-top: 20px;
-  padding: 10px 20px;
+  padding: 20px 30px;
   font-size: 18px;
   font-weight: bold;
   color: white;

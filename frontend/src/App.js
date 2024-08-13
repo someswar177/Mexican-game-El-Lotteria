@@ -3,13 +3,18 @@ import axios from 'axios';
 import Grid from './components/Grid';
 import StartButton from './components/StartButton';
 import StopButton from './components/StopButton';
+import Popup from './components/Popup';
 import { io } from "socket.io-client";
+import './App.css'
 
 const App = () => {
     const socket = io('http://localhost:5000');
+    const [popupMessage, setPopupMessage] = useState('');
+    const [showPopup, setShowPopup] = useState(false);
+    const [user1Name, setUser1Name] = useState('User 1'); // Editable name for User 1
+    const [user2Name, setUser2Name] = useState('User 2'); // Editable name for User 2
     socket.on('winner', (data) => {
         console.log('Winner detected:', data.userId);
-        // alert(`User ${data.userId} has won the game!`);
     });
     const [user1Grid, setUser1Grid] = useState(
         Array.from({ length: 3 }, () => Array(3).fill(''))
@@ -39,20 +44,31 @@ const App = () => {
     };
 
     const startGame = async () => {
-        if (!validateGrids()) {
-            alert("Each grid must contain unique numbers.");
+        const isGridEmpty = (grid) => grid.flat().every(cell => cell === '');
+        const isGridIncomplete = (grid) => grid.flat().filter(cell => cell !== '').length < 9;
+
+        if (isGridEmpty(user1Grid) || isGridEmpty(user2Grid)) {
+            setPopupMessage("Grids should not be empty.");
+            setShowPopup(true);
+            return;
+        }
+
+        if (isGridIncomplete(user1Grid) || isGridIncomplete(user2Grid)) {
+            setPopupMessage("Please fill the grids completely with 9 numbers.");
+            setShowPopup(true);
             return;
         }
 
         if (JSON.stringify(user1Grid) === JSON.stringify(user2Grid)) {
-            alert("The grids for User 1 and User 2 cannot be the same.");
+            setPopupMessage("The grids for User 1 and User 2 cannot be the same.");
+            setShowPopup(true);
             return;
         }
 
         try {
             if (!isGameActive) {
                 console.log(user1Grid);
-                const response = await axios.post('http://localhost:5000/api/game/start', { user1Grid, user2Grid });
+                const response = await axios.post('http://localhost:5000/api/game/start', {user1Name,user2Name, user1Grid, user2Grid });
                 console.log("Game started from frontend");
 
                 setUser1Id(response.data.user1Id);
@@ -100,33 +116,59 @@ const App = () => {
         }
     };
 
+    const closePopup = () => {
+        setShowPopup(false);
+        setPopupMessage('');
+    };
+
     return (
         <div className="App">
             <h1>El Lotteria Game</h1>
             <div className="grid-container">
                 <div>
-                    <h2>User 1</h2>
-                    <Grid grid={user1Grid} setGrid={(grid) => handleGridUpdate('user1', grid)} generatedNumbers={generatedNumbers} />
+                    <input
+                        type="text"
+                        value={user1Name}
+                        onChange={(e) => setUser1Name(e.target.value)}
+                        className="user-name-input"
+                        disabled={isGameActive} // Disable editing name if the game is active
+                    />
+                    <Grid
+                        grid={user1Grid}
+                        setGrid={(grid) => handleGridUpdate('user1', grid)}
+                        generatedNumbers={generatedNumbers}
+                        isGameActive={isGameActive}
+                    />
                 </div>
                 <div>
-                    <h2>User 2</h2>
-                    <Grid grid={user2Grid} setGrid={(grid) => handleGridUpdate('user2', grid)} generatedNumbers={generatedNumbers} />
+                    <input
+                        type="text"
+                        value={user2Name}
+                        onChange={(e) => setUser2Name(e.target.value)}
+                        className="user-name-input"
+                        disabled={isGameActive} // Disable editing name if the game is active
+                    />
+                    <Grid
+                        grid={user2Grid}
+                        setGrid={(grid) => handleGridUpdate('user2', grid)}
+                        generatedNumbers={generatedNumbers}
+                        isGameActive={isGameActive}
+                    />
                 </div>
             </div>
             {winners.length > 1 ? (
-                <h2>Winners: {winners.join(', ')}</h2>
-            ) : (winners.length > 0 && <h2>Winner: {winners.join(', ')}</h2>)
+                <h2 className="winner-announcement">&#129321; Winners: {winners.join(', ')} &#129395;</h2>
+            ) : (winners.length > 0 && <h2 className="winner-announcement">&#129321; Winner: {winners.join(', ')} &#129395;</h2>)
             }
             <div className="buttons-container">
                 <button onClick={startGame}>
-                    {isGameActive ? 'Start New Game' : 'Start Game'}
+                {isGameActive ? <div style={{ color: "black" }}>Start New Game</div> : 'Start Game'}
                 </button>
                 <button onClick={generateNumber} disabled={!isGameActive} hidden={winners.length > 0}>
                     Generate Number
                 </button>
             </div>
-            {/* {user1Id && <p>User 1 ID: {user1Id}</p>}
-        {user2Id && <p>User 2 ID: {user2Id}</p>} */}
+            {showPopup && <Popup message={popupMessage} onClose={closePopup} />}
         </div>
     );
 };

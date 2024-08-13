@@ -2,12 +2,11 @@ const express = require('express');
 const User = require('../models/User');
 const router = express.Router();
 const mongoose = require('mongoose');
-const io = require('express')().get('socketio'); // Ensure io is accessible
+const io = require('express')().get('socketio'); 
 
-// Listen for changes on the User collection
 User.watch().on('change', async (change) => {
     try {
-        console.log('Change detected:', change);
+        // console.log('Change detected:', change);
 
         if (change.operationType === 'update') {
             if (change.updateDescription.updatedFields.cutNumbers) {
@@ -18,13 +17,13 @@ User.watch().on('change', async (change) => {
                     return;
                 }
 
-                console.log('cutNumbers updated:', updatedUser.cutNumbers);
+                // console.log('cutNumbers updated:', updatedUser.cutNumbers);
 
                 const winners = await checkForWinner(io);
 
                 if (winners && winners.length > 0) {
                     console.log('Winner(s) detected:', winners);
-                    io.emit('winners', winners); // Emit all winners in one event
+                    io.emit('winners', winners); 
                 } else {
                     console.log('No winners yet.');
                 }
@@ -36,14 +35,16 @@ User.watch().on('change', async (change) => {
 });
 
 router.post('/start', async (req, res) => {
-    const { user1Grid, user2Grid } = req.body;
-    console.log(user1Grid, user2Grid);
+    const { user1Name,user2Name,user1Grid, user2Grid } = req.body;
+    console.log(req.body);
+    // console.log(user1Grid, user2Grid);
 
     try {
-        await User.deleteMany({ userId: { $in: ['User1', 'User2'] } });
+        // await User.deleteMany({ userId: { $in: ['User1', 'User2'] } });
+        await User.deleteMany();
 
-        const user1 = await User.create({ userId: 'User1', grid: user1Grid });
-        const user2 = await User.create({ userId: 'User2', grid: user2Grid });
+        const user1 = await User.create({ userId: user1Name, grid: user1Grid });
+        const user2 = await User.create({ userId: user2Name, grid: user2Grid });
 
         res.status(201).json({
             message: 'Grids saved successfully',
@@ -60,14 +61,11 @@ router.post('/start', async (req, res) => {
 
 router.post('/generate-number', async (req, res) => {
     const { number } = req.body;
-    console.log("Received number:", number);
-    const io = req.io; // Get the Socket.io instance from the request
-
+    const io = req.io; 
     try {
         const users = await User.find({ status: 'playing' });
         console.log("Processing generated number:", number);
 
-        // Use Promise.all to ensure simultaneous updates
         await Promise.all(users.map(async (user) => {
             if (user.grid.flat().includes(number)) {
                 user.cutNumbers.push(number);
@@ -75,7 +73,7 @@ router.post('/generate-number', async (req, res) => {
             }
         }));
 
-        const winners = await checkForWinner(io); // Pass io to the checkForWinner function
+        const winners = await checkForWinner(io); 
 
         if (winners) {
             console.log(winners);
@@ -99,7 +97,6 @@ const checkForWinner = async (io) => {
 
         let hasWon = false;
 
-        // Check for winning rows
         for (let row of grid) {
             if (row.every(num => marked.includes(num))) {
                 user.status = 'won';
@@ -109,7 +106,6 @@ const checkForWinner = async (io) => {
             }
         }
 
-        // Check for winning columns
         for (let i = 0; i < 3; i++) {
             const column = [grid[0][i], grid[1][i], grid[2][i]];
             if (column.every(num => marked.includes(num))) {
@@ -126,7 +122,7 @@ const checkForWinner = async (io) => {
     }
 
     if (winners.length > 0) {
-        io.emit('winners', winners); // Emit all winners at once
+        io.emit('winners', winners); 
     }
 
     return winners.length > 0 ? winners : null;
