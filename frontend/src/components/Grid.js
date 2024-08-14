@@ -79,7 +79,7 @@ const Grid = ({ grid, setGrid, generatedNumbers, isGameActive }) => {
                 onChange={(e) => handleInputChange(rowIndex, colIndex, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, rowIndex, colIndex)}
                 ref={(el) => inputRefs.current[rowIndex * 3 + colIndex] = el}  
-                disabled={isGameActive} // Disable input if the game is active
+                disabled={isGameActive}
               />
               {generatedNumbers.includes(value) && (
                 <div className="red-x">&#10060;</div>

@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Grid from './components/Grid';
-import StartButton from './components/StartButton';
-import StopButton from './components/StopButton';
 import Popup from './components/Popup';
 import { io } from "socket.io-client";
 import './App.css'
@@ -11,8 +9,14 @@ const App = () => {
     const socket = io('http://localhost:5000');
     const [popupMessage, setPopupMessage] = useState('');
     const [showPopup, setShowPopup] = useState(false);
-    const [user1Name, setUser1Name] = useState('User 1'); // Editable name for User 1
-    const [user2Name, setUser2Name] = useState('User 2'); // Editable name for User 2
+    const [user1Name, setUser1Name] = useState('User 1'); 
+    const [user2Name, setUser2Name] = useState('User 2'); 
+    const [winners, setWinners] = useState([]);
+    const [isGameActive, setIsGameActive] = useState(false);
+    const [generatedNumbers, setGeneratedNumbers] = useState([]);
+    const [user1Id, setUser1Id] = useState(null);
+    const [user2Id, setUser2Id] = useState(null);
+
     socket.on('winner', (data) => {
         console.log('Winner detected:', data.userId);
     });
@@ -22,11 +26,6 @@ const App = () => {
     const [user2Grid, setUser2Grid] = useState(
         Array.from({ length: 3 }, () => Array(3).fill(''))
     );
-    const [winners, setWinners] = useState([]);
-    const [isGameActive, setIsGameActive] = useState(false);
-    const [generatedNumbers, setGeneratedNumbers] = useState([]);
-    const [user1Id, setUser1Id] = useState(null);
-    const [user2Id, setUser2Id] = useState(null);
 
     const handleGridUpdate = (userId, grid) => {
         if (userId === 'user1') setUser1Grid(grid);
@@ -131,7 +130,7 @@ const App = () => {
                         value={user1Name}
                         onChange={(e) => setUser1Name(e.target.value)}
                         className="user-name-input"
-                        disabled={isGameActive} // Disable editing name if the game is active
+                        disabled={isGameActive} 
                     />
                     <Grid
                         grid={user1Grid}
@@ -146,7 +145,7 @@ const App = () => {
                         value={user2Name}
                         onChange={(e) => setUser2Name(e.target.value)}
                         className="user-name-input"
-                        disabled={isGameActive} // Disable editing name if the game is active
+                        disabled={isGameActive} 
                     />
                     <Grid
                         grid={user2Grid}
