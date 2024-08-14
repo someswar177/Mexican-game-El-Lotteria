@@ -6,7 +6,9 @@ import { io } from "socket.io-client";
 import './App.css'
 
 const App = () => {
-    const socket = io('http://localhost:5000');
+    const apiUrl = process.env.REACT_APP_BASE_URL || "http://localhost:5000" ;
+    console.log(apiUrl);
+    const socket = io(apiUrl);
     const [popupMessage, setPopupMessage] = useState('');
     const [showPopup, setShowPopup] = useState(false);
     const [user1Name, setUser1Name] = useState('User 1'); 
@@ -67,7 +69,7 @@ const App = () => {
         try {
             if (!isGameActive) {
                 console.log(user1Grid);
-                const response = await axios.post('http://localhost:5000/api/game/start', {user1Name,user2Name, user1Grid, user2Grid });
+                const response = await axios.post(`${apiUrl}/api/game/start`, {user1Name,user2Name, user1Grid, user2Grid });
                 console.log("Game started from frontend");
 
                 setUser1Id(response.data.user1Id);
@@ -100,7 +102,7 @@ const App = () => {
         console.log("Generated number:", randomNumber);
 
         try {
-            const response = await axios.post('http://localhost:5000/api/game/generate-number', { number: randomNumber });
+            const response = await axios.post(`${apiUrl}/api/game/generate-number`, { number: randomNumber });
             console.log("Number sent to backend:", randomNumber);
 
             setGeneratedNumbers([...generatedNumbers, randomNumber]);
