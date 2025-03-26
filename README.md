@@ -1,5 +1,9 @@
 # Mexican-game-El-Lotteria
-![alt text](assests/image.png)
+
+<p align="center">
+  <img src="assets/image.png" width="45%" />
+  <img src="assets/image2.png" width="45%" />
+</p>
 
 # **El Lotteria Game 🎲**  
 
